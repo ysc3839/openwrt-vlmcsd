@@ -1,0 +1,14 @@
+#!/bin/sh /etc/rc.common
+
+START=99
+USE_PROCD=1
+
+start_service() {
+	procd_open_instance
+	procd_set_param command /usr/bin/vlmcsd -D -i /etc/vlmcsd.ini -l syslog
+	procd_set_param respawn
+	procd_set_param file /etc/vlmcsd.ini
+	procd_set_param user nobody
+	procd_set_param group nogroup
+	procd_close_instance
+}
