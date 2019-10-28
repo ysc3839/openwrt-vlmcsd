@@ -1,0 +1,22 @@
+#!/bin/sh
+
+s=dhcp.vlmcsd
+
+uci -q get $s >/dev/null && exit 0
+
+domain=$(uci -q get dhcp.@dnsmasq[0].domain)
+domain=${domain:+.$domain}
+hostname=$(cat /proc/sys/kernel/hostname)
+
+uci -q batch <<-EOF >/dev/null
+	set $s=srvhost
+	set $s.srv='_vlmcs._tcp$domain'
+	set $s.target='$hostname$domain'
+	set $s.port='1688'
+	set $s.class='0'
+	set $s.weight='100'
+	commit dhcp
+EOF
+
+/etc/init.d/dnsmasq reload &
+exit 0

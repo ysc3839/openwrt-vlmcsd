@@ -2,7 +2,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=vlmcsd
 PKG_VERSION=svn1112
-PKG_RELEASE:=1
+PKG_RELEASE:=2
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://github.com/Wind4/vlmcsd.git
@@ -38,6 +38,19 @@ define Package/vlmcsd/install
 
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) ./files/vlmcsd.init $(1)/etc/init.d/vlmcsd
+
+	$(INSTALL_DIR) $(1)/etc/uci-defaults
+	$(INSTALL_BIN) ./files/vlmcsd.defaults $(1)/etc/uci-defaults
+endef
+
+define Package/vlmcsd/prerm
+#!/bin/sh
+s=dhcp.vlmcsd
+uci -q get "$$s" >/dev/null || exit 0
+uci -q batch <<-EOF >/dev/null
+	delete $$s
+	commit dhcp
+EOF
 endef
 
 $(eval $(call BuildPackage,vlmcsd))
